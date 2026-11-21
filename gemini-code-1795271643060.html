@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>¡Suerte! Scratch &amp; Win</title>
+  <style>
+    :root {
+      --crimson: #b91c1c;
+      --deep-red: #7f1d1d;
+      --obsidian: #111111;
+      --charcoal: #1e1b18;
+      --gold: #f59e0b;
+      --bright-gold: #fcd34d;
+      --cream: #fef3c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--obsidian);
+      background-image:
+        radial-gradient(circle at 50% 20%, rgba(185, 28, 28, 0.35), transparent 65%),
+        repeating-linear-gradient(
+          45deg,
+          rgba(245, 158, 11, 0.04) 0px,
+          rgba(245, 158, 11, 0.04) 10px,
+          transparent 10px,
+          transparent 20px
+        );
+      color: var(--cream);
+      font-family: 'Georgia', 'Times New Roman', serif;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* Papel Picado Decorative Banner */
+    .papel-picado {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 36px;
+      display: flex;
+      justify-content: space-around;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .flag {
+      flex: 1;
+      height: 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);
+      border-top: 3px solid var(--gold);
+    }
+
+    .flag:nth-child(odd) {
+      background: var(--crimson);
+    }
+
+    .flag:nth-child(even) {
+      background: #18181b;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    /* Main Card Container */
+    .card-frame {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      background: linear-gradient(145deg, var(--charcoal), #0c0a09);
+      border: 3px solid var(--gold);
+      border-radius: 20px;
+      padding: 28px 22px;
+      text-align: center;
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.85),
+        0 0 25px rgba(245, 158, 11, 0.25),
+        inset 0 0 0 4px var(--deep-red);
+    }
+
+    /* Corner Flourishes */
+    .corner {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--bright-gold);
+    }
+    .corner.tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+    .corner.tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+    .corner.bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+    .corner.br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+    .subtitle {
+      font-size: 0.78rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--bright-gold);
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(245, 158, 11, 0.5);
+      margin-bottom: 6px;
+    }
+
+    .instruction {
+      font-size: 0.92rem;
+      color: #d6d3d1;
+      margin-bottom: 22px;
+      font-style: italic;
+    }
+
+    /* Scratch Zone */
+    .scratch-wrapper {
+      position: relative;
+      width: 280px;
+      height: 170px;
+      margin: 0 auto 22px;
+      border-radius: 14px;
+      border: 3px solid var(--gold);
+      overflow: hidden;
+      background: radial-gradient(circle, var(--crimson) 0%, var(--deep-red) 100%);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .prize-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      padding: 10px;
+    }
+
+    .prize-badge {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--bright-gold);
+      margin-bottom: 4px;
+    }
+
+    .prize-amount {
+      font-size: 3.4rem;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 0 3px 12px rgba(0, 0, 0, 0.7), 0 0 18px var(--gold);
+      line-height: 1;
+    }
+
+    .prize-note {
+      font-size: 0.8rem;
+      color: var(--cream);
+      margin-top: 6px;
+      opacity: 0.9;
+    }
+
+    canvas#scratchCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      cursor: crosshair;
+      touch-action: none;
+      transition: opacity 0.5s ease;
+    }
+
+    canvas#scratchCanvas.revealed {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Action Button */
+    .btn-new {
+      background: linear-gradient(180deg, var(--bright-gold), var(--gold));
+      color: var(--obsidian);
+      border: none;
+      border-radius: 999px;
+      padding: 13px 30px;
+      font-size: 1rem;
+      font-weight: bold;
+      font-family: inherit;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-new:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.6);
+    }
+
+    .btn-new:active {
+      transform: translateY(1px);
+    }
+
+    .status-text {
+      margin-top: 16px;
+      min-height: 22px;
+      font-size: 0.95rem;
+      color: var(--bright-gold);
+      font-weight: bold;
+    }
+
+    /* Confetti Canvas */
+    canvas#confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Papel Picado Garland -->
+  <div class="papel-picado" aria-hidden="true">
+    <div class="flag"></div><div class="flag"></div><div class="flag"></div>
+    <div class="flag"></div><div class="flag"></div><div class="flag"></div>
+    <div class="flag"></div><div class="flag"></div><div class="flag"></div>
+    <div class="flag"></div><div class="flag"></div><div class="flag"></div>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <main class="card-frame">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="subtitle">✦ Edición Especial ✦</div>
+    <h1>¡Buena Suerte!</h1>
+    <p class="instruction">Scratch the gold foil to reveal your guaranteed prize</p>
+
+    <div class="scratch-wrapper">
+      <div class="prize-layer">
+        <span class="prize-badge">★ You Won ★</span>
+        <div class="prize-amount" id="prizeDisplay">$100</div>
+        <span class="prize-note">Guaranteed Winner</span>
+      </div>
+      <canvas id="scratchCanvas" width="280" height="170"></canvas>
+    </div>
+
+    <button class="btn-new" id="newCardBtn" type="button">New Scratch Card</button>
+    <div class="status-text" id="statusText"></div>
+  </main>
+
+  <script>
+    (function () {
+      const PRIZES = ['$50', '$75', '$100'];
+      const REVEAL_THRESHOLD = 0.45; // Auto-reveal once 45% is scratched
+
+      const scratchCanvas = document.getElementById('scratchCanvas');
+      const ctx = scratchCanvas.getContext('2d', { willReadFrequently: true });
+      const prizeDisplay = document.getElementById('prizeDisplay');
+      const statusText = document.getElementById('statusText');
+      const newCardBtn = document.getElementById('newCardBtn');
+
+      const confettiCanvas = document.getElementById('confettiCanvas');
+      const cCtx = confettiCanvas.getContext('2d');
+
+      let isDrawing = false;
+      let isRevealed = false;
+      let particles = [];
+      let animationId = null;
+
+      function pickRandomPrize() {
+        const index = Math.floor(Math.random() * PRIZES.length);
+        return PRIZES[index];
+      }
+
+      function paintFoilCover() {
+        const w = scratchCanvas.width;
+        const h = scratchCanvas.height;
+
+        ctx.globalCompositeOperation = 'source-over';
+
+        // Metallic Gold Gradient
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#d97706');
+        grad.addColorStop(0.3, '#fcd34d');
+        grad.addColorStop(0.5, '#f59e0b');
+        grad.addColorStop(0.75, '#fde68a');
+        grad.addColorStop(1, '#b45309');
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Festive Geometric Diamond Pattern on Foil
+        ctx.strokeStyle = 'rgba(127, 29, 29, 0.22)';
+        ctx.lineWidth = 1.5;
+        const step = 20;
+        for (let x = -h; x < w + h; x += step) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x + h, h);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(x + h, 0);
+          ctx.lineTo(x, h);
+          ctx.stroke();
+        }
+
+        // Center Emblem Box
+        ctx.fillStyle = 'rgba(17, 17, 17, 0.82)';
+        ctx.fillRect(w / 2 - 86, h / 2 - 24, 172, 48);
+        ctx.strokeStyle = '#fcd34d';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(w / 2 - 86, h / 2 - 24, 172, 48);
+
+        // Foil Text
+        ctx.fillStyle = '#fcd34d';
+        ctx.font = 'bold 15px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✦ SCRATCH HERE ✦', w / 2, h / 2);
+      }
+
+      function initGame() {
+        isDrawing = false;
+        isRevealed = false;
+        scratchCanvas.classList.remove('revealed');
+        statusText.textContent = '';
+        prizeDisplay.textContent = pickRandomPrize();
+        paintFoilCover();
+      }
+
+      function getPointerPos(e) {
+        const rect = scratchCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: ((clientX - rect.left) / rect.width) * scratchCanvas.width,
+          y: ((clientY - rect.top) / rect.height) * scratchCanvas.height
+        };
+      }
+
+      function scratchAt(x, y) {
+        if (isRevealed) return;
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function checkRevealProgress() {
+        if (isRevealed) return;
+        const imgData = ctx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height).data;
+        let transparentPixels = 0;
+        const totalPixels = imgData.length / 4;
+
+        // Sample every 4th pixel for fast performance
+        for (let i = 3; i < imgData.length; i += 16) {
+          if (imgData[i] === 0) transparentPixels++;
+        }
+
+        const ratio = (transparentPixels * 4) / totalPixels;
+        if (ratio >= REVEAL_THRESHOLD) {
+          revealAll();
+        }
+      }
+
+      function revealAll() {
+        isRevealed = true;
+        scratchCanvas.classList.add('revealed');
+        statusText.textContent = `¡Felicidades! You won ${prizeDisplay.textContent}!`;
+        launchConfetti();
+      }
+
+      // Pointer & Touch Events
+      scratchCanvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        const pos = getPointerPos(e);
+        scratchAt(pos.x, pos.y);
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        const pos = getPointerPos(e);
+        scratchAt(pos.x, pos.y);
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDrawing) {
+          isDrawing = false;
+          checkRevealProgress();
+        }
+      });
+
+      scratchCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isDrawing = true;
+        const pos = getPointerPos(e);
+        scratchAt(pos.x, pos.y);
+      }, { passive: false });
+
+      scratchCanvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isDrawing) return;
+        const pos = getPointerPos(e);
+        scratchAt(pos.x, pos.y);
+      }, { passive: false });
+
+      scratchCanvas.addEventListener('touchend', () => {
+        if (isDrawing) {
+          isDrawing = false;
+          checkRevealProgress();
+        }
+      });
+
+      // Festive Red, Black & Gold Confetti
+      function launchConfetti() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+        const colors = ['#dc2626', '#f59e0b', '#fcd34d', '#18181b', '#ffffff'];
+        particles = [];
+
+        for (let i = 0; i < 85; i++) {
+          particles.push({
+            x: confettiCanvas.width / 2,
+            y: confettiCanvas.height / 2 - 40,
+            vx: (Math.random() - 0.5) * 14,
+            vy: (Math.random() - 0.7) * 14,
+            size: Math.random() * 7 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1
+          });
+        }
+
+        if (animationId) cancelAnimationFrame(animationId);
+        animateConfetti();
+      }
+
+      function animateConfetti() {
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        let active = false;
+
+        for (const p of particles) {
+          if (p.alpha <= 0) continue;
+          active = true;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.35; // gravity
+          p.alpha -= 0.014;
+
+          cCtx.globalAlpha = Math.max(0, p.alpha);
+          cCtx.fillStyle = p.color;
+          cCtx.fillRect(p.x, p.y, p.size, p.size * 0.6);
+        }
+
+        cCtx.globalAlpha = 1;
+        if (active) {
+          animationId = requestAnimationFrame(animateConfetti);
+        }
+      }
+
+      newCardBtn.addEventListener('click', initGame);
+
+      // Start first card on load
+      initGame();
+    })();
+  </script>
+</body>
+</html>
